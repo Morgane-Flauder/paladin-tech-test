@@ -9,6 +9,7 @@ import {
   Put,
 } from '@nestjs/common';
 
+import { HealthReport } from '../health-reports/entities/health-report.entity';
 import { ClientsService } from './clients.service';
 import { CreateClientDto } from './dto/create-client.dto';
 import { UpdateClientDto } from './dto/update-client.dto';
@@ -21,6 +22,13 @@ export class ClientsController {
   @Get(':id')
   async getById(@Param('id', ParseIntPipe) id: number): Promise<Client> {
     return this.clientsService.getById(id);
+  }
+
+  @Get(':id/health-reports')
+  async getHealthReportsById(
+    @Param('id', ParseIntPipe) id: number,
+  ): Promise<HealthReport[]> {
+    return this.clientsService.getHealthReportByClientId(id);
   }
 
   @Post()

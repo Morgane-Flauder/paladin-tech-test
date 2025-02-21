@@ -7,6 +7,8 @@ import { ClientsController } from './clients/clients.controller';
 import { ClientsModule } from './clients/clients.module';
 import { ClientsService } from './clients/clients.service';
 import { Client } from './clients/entities/client.entity';
+import { HealthReport } from './health-reports/entities/health-report.entity';
+import { HealthReportsModule } from './health-reports/health-reports.module';
 
 @Module({
   imports: [
@@ -17,10 +19,10 @@ import { Client } from './clients/entities/client.entity';
       username: process.env.DATABASE_USER,
       password: process.env.DATABASE_PASSWORD,
       database: process.env.DATABASE_NAME,
-      entities: [Client],
-      synchronize: true, // To set to false in production
+      entities: [Client, HealthReport],
     }),
     ClientsModule,
+    HealthReportsModule,
   ],
   controllers: [AppController, ClientsController],
   providers: [AppService, ClientsService],

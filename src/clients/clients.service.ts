@@ -2,6 +2,7 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 
+import { HealthReport } from '../health-reports/entities/health-report.entity';
 import { CreateClientDto } from './dto/create-client.dto';
 import { UpdateClientDto } from './dto/update-client.dto';
 import { Client } from './entities/client.entity';
@@ -18,6 +19,21 @@ export class ClientsService {
 
     if (client) {
       return client;
+    }
+
+    throw new NotFoundException(`Client ${id} does not exist`);
+  }
+
+  async getHealthReportByClientId(id: number): Promise<HealthReport[]> {
+    const client = await this.clientsRepository.findOne({
+      where: {
+        id: id,
+      },
+      relations: { healthReports: true },
+    });
+
+    if (client) {
+      return client.healthReports;
     }
 
     throw new NotFoundException(`Client ${id} does not exist`);
