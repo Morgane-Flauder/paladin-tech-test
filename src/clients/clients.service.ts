@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { FindOneOptions, Repository } from 'typeorm';
 
 import { HealthReport } from '../health-reports/entities/health-report.entity';
 import { CreateClientDto } from './dto/create-client.dto';
@@ -14,8 +14,14 @@ export class ClientsService {
     private clientsRepository: Repository<Client>,
   ) {}
 
-  async getById(id: number): Promise<Client> {
-    const client = await this.clientsRepository.findOneBy({ id });
+  async getById(id: number, options?: FindOneOptions<Client>): Promise<Client> {
+    const client = await this.clientsRepository.findOne({
+      ...options,
+      where: {
+        id: id,
+        ...options?.where,
+      },
+    });
 
     if (client) {
       return client;
@@ -25,18 +31,11 @@ export class ClientsService {
   }
 
   async getHealthReportByClientId(id: number): Promise<HealthReport[]> {
-    const client = await this.clientsRepository.findOne({
-      where: {
-        id: id,
-      },
+    const client = await this.getById(id, {
       relations: { healthReports: true },
     });
 
-    if (client) {
-      return client.healthReports;
-    }
-
-    throw new NotFoundException(`Client ${id} does not exist`);
+    return client.healthReports;
   }
 
   create(createClientDto: CreateClientDto): Promise<Client> {
@@ -54,16 +53,12 @@ export class ClientsService {
     id: number;
     createClientDto: CreateClientDto;
   }): Promise<Client> {
-    const client = await this.clientsRepository.findOneBy({ id });
+    const client = await this.getById(id);
 
-    if (client) {
-      client.firstName = createClientDto.firstName;
-      client.lastName = createClientDto.lastName;
+    client.firstName = createClientDto.firstName;
+    client.lastName = createClientDto.lastName;
 
-      return this.clientsRepository.save(client);
-    }
-
-    throw new NotFoundException(`Client ${id} does not exist`);
+    return this.clientsRepository.save(client);
   }
 
   async update({
@@ -73,15 +68,11 @@ export class ClientsService {
     id: number;
     updateClientDto: UpdateClientDto;
   }): Promise<Client> {
-    const client = await this.clientsRepository.findOneBy({ id });
+    const client = await this.getById(id);
 
-    if (client) {
-      client.firstName = updateClientDto.firstName ?? client.firstName;
-      client.lastName = updateClientDto.lastName ?? client.lastName;
+    client.firstName = updateClientDto.firstName ?? client.firstName;
+    client.lastName = updateClientDto.lastName ?? client.lastName;
 
-      return this.clientsRepository.save(client);
-    }
-
-    throw new NotFoundException(`Client ${id} does not exist`);
+    return this.clientsRepository.save(client);
   }
 }
