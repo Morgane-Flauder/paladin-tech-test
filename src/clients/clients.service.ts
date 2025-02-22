@@ -13,6 +13,8 @@ export class ClientsService {
   constructor(
     @InjectRepository(Client)
     private clientsRepository: Repository<Client>,
+    @InjectRepository(HealthReport)
+    private healthReportsRepository: Repository<HealthReport>,
   ) {}
 
   async getById(
@@ -84,5 +86,21 @@ export class ClientsService {
     client.lastName = updateClientDto.lastName ?? client.lastName;
 
     return this.clientsRepository.save(client);
+  }
+
+  async delete(id: number) {
+    const client = await this.getById(id, {
+      relations: { healthReports: true },
+    });
+
+    if (!client) {
+      throw new ClientNotFoundException(id);
+    }
+
+    if (client.healthReports) {
+      await this.healthReportsRepository.remove(client.healthReports);
+    }
+
+    return this.clientsRepository.delete(id);
   }
 }

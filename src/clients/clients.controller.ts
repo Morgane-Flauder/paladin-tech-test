@@ -1,6 +1,7 @@
 import {
   Body,
   Controller,
+  Delete,
   Get,
   Param,
   ParseIntPipe,
@@ -57,5 +58,10 @@ export class ClientsController {
     @Body() updateClientDto: UpdateClientDto,
   ): Promise<Client> {
     return this.clientsService.update({ id, updateClientDto });
+  }
+
+  @Delete(':id')
+  delete(@Param('id', ParseIntPipe) id: number) {
+    return this.clientsService.delete(id);
   }
 }
