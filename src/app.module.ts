@@ -8,7 +8,9 @@ import { ClientsModule } from './clients/clients.module';
 import { ClientsService } from './clients/clients.service';
 import { Client } from './clients/entities/client.entity';
 import { HealthReport } from './health-reports/entities/health-report.entity';
+import { HealthReportsController } from './health-reports/health-reports.controller';
 import { HealthReportsModule } from './health-reports/health-reports.module';
+import { HealthReportsService } from './health-reports/health-reports.service';
 
 @Module({
   imports: [
@@ -24,7 +26,7 @@ import { HealthReportsModule } from './health-reports/health-reports.module';
     ClientsModule,
     HealthReportsModule,
   ],
-  controllers: [AppController, ClientsController],
-  providers: [AppService, ClientsService],
+  controllers: [AppController, ClientsController, HealthReportsController],
+  providers: [AppService, ClientsService, HealthReportsService],
 })
 export class AppModule {}
