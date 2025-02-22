@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { FindOneOptions, Repository } from 'typeorm';
 
@@ -6,6 +6,7 @@ import { HealthReport } from '../health-reports/entities/health-report.entity';
 import { CreateClientDto } from './dto/create-client.dto';
 import { UpdateClientDto } from './dto/update-client.dto';
 import { Client } from './entities/client.entity';
+import ClientNotFoundException from './exceptions/client-not-found.exception';
 
 @Injectable()
 export class ClientsService {
@@ -14,26 +15,27 @@ export class ClientsService {
     private clientsRepository: Repository<Client>,
   ) {}
 
-  async getById(id: number, options?: FindOneOptions<Client>): Promise<Client> {
-    const client = await this.clientsRepository.findOne({
+  async getById(
+    id: number,
+    options?: FindOneOptions<Client>,
+  ): Promise<Client | null> {
+    return this.clientsRepository.findOne({
       ...options,
       where: {
         id: id,
         ...options?.where,
       },
     });
-
-    if (client) {
-      return client;
-    }
-
-    throw new NotFoundException(`Client ${id} does not exist`);
   }
 
   async getHealthReportByClientId(id: number): Promise<HealthReport[]> {
     const client = await this.getById(id, {
       relations: { healthReports: true },
     });
+
+    if (!client) {
+      throw new ClientNotFoundException(id);
+    }
 
     return client.healthReports;
   }
@@ -55,6 +57,10 @@ export class ClientsService {
   }): Promise<Client> {
     const client = await this.getById(id);
 
+    if (!client) {
+      throw new ClientNotFoundException(id);
+    }
+
     client.firstName = createClientDto.firstName;
     client.lastName = createClientDto.lastName;
 
@@ -69,6 +75,10 @@ export class ClientsService {
     updateClientDto: UpdateClientDto;
   }): Promise<Client> {
     const client = await this.getById(id);
+
+    if (!client) {
+      throw new ClientNotFoundException(id);
+    }
 
     client.firstName = updateClientDto.firstName ?? client.firstName;
     client.lastName = updateClientDto.lastName ?? client.lastName;

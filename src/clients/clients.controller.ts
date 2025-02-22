@@ -14,6 +14,7 @@ import { ClientsService } from './clients.service';
 import { CreateClientDto } from './dto/create-client.dto';
 import { UpdateClientDto } from './dto/update-client.dto';
 import { Client } from './entities/client.entity';
+import ClientNotFoundException from './exceptions/client-not-found.exception';
 
 @Controller('client')
 export class ClientsController {
@@ -21,7 +22,13 @@ export class ClientsController {
 
   @Get(':id')
   async getById(@Param('id', ParseIntPipe) id: number): Promise<Client> {
-    return this.clientsService.getById(id);
+    const client = await this.clientsService.getById(id);
+
+    if (!client) {
+      throw new ClientNotFoundException(id);
+    }
+
+    return client;
   }
 
   @Get(':id/health-reports')
