@@ -1,6 +1,7 @@
 import {
   Body,
   Controller,
+  Delete,
   Param,
   ParseIntPipe,
   Post,
@@ -39,5 +40,13 @@ export class HealthReportsController {
       year,
       createHealthReportDto,
     });
+  }
+
+  @Delete('/client/:clientId/year/:year')
+  delete(
+    @Param('clientId', ParseIntPipe) clientId: number,
+    @Param('year', ParseIntPipe) year: number,
+  ) {
+    return this.healthReportsService.delete({ clientId, year });
   }
 }

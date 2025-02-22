@@ -85,4 +85,14 @@ export class HealthReportsService {
 
     return this.healthReportsRepository.save(healthReport);
   }
+
+  async delete({ clientId, year }: { clientId: number; year: number }) {
+    const healthReport = await this.getByClientIdAndYear(clientId, year);
+
+    if (!healthReport) {
+      throw new HealthReportNotFoundException(clientId, year);
+    }
+
+    return this.healthReportsRepository.delete(healthReport);
+  }
 }
