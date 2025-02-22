@@ -1,8 +1,6 @@
-version: '3.8'
-
 services:
-  mysql:
-    image: mysql:8
+  local_db:
+    image: mysql:latest
     container_name: paladin-db
     environment:
       MYSQL_ROOT_PASSWORD: root
@@ -14,24 +12,6 @@ services:
     volumes:
       - mysql_data:/var/lib/mysql
       - ./data/paladin_technical_test_dump.sql:/docker-entrypoint-initdb.d/paladin_technical_test_dump.sql
-
-  nestjs:
-    build: .
-    container_name: paladin-app
-    depends_on:
-      - mysql
-    environment:
-      DATABASE_HOST: mysql
-      DATABASE_PORT: 3306
-      DATABASE_USER: user
-      DATABASE_PASSWORD: password
-      DATABASE_NAME: paladin_technical_test
-    ports:
-      - "3000:3000"
-    volumes:
-      - .:/app
-      - /app/node_modules
-    command: npm run start:dev
 
 volumes:
   mysql_data:
