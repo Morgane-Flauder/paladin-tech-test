@@ -2,7 +2,10 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { FindOneOptions, Repository } from 'typeorm';
 
-import { HealthReport } from '../health-reports/entities/health-report.entity';
+import {
+  Guidance,
+  HealthReport,
+} from '../health-reports/entities/health-report.entity';
 import { CreateClientDto } from './dto/create-client.dto';
 import { UpdateClientDto } from './dto/update-client.dto';
 import { Client } from './entities/client.entity';
@@ -16,6 +19,51 @@ export class ClientsService {
     @InjectRepository(HealthReport)
     private healthReportsRepository: Repository<HealthReport>,
   ) {}
+
+  async getHomonyms(): Promise<
+    {
+      clientId: number;
+      healthReports: {
+        year: number;
+        guidance: Guidance;
+      }[];
+    }[][]
+  > {
+    // Return an array of array of homonyms and their health reports, grouped by full name.
+    // Each element is an array of all the clients ids with the same name and their health reports.
+
+    const homonymsList: {
+      homonyms: {
+        clientId: number;
+        healthReports: {
+          year: number;
+          guidance: Guidance;
+        }[];
+      }[];
+    }[] = await this.clientsRepository
+      .createQueryBuilder('client')
+      .select(
+        `JSON_ARRAYAGG(
+                          JSON_OBJECT(
+                            'clientId',client.id,
+                            'healthReports', (
+                              SELECT JSON_ARRAYAGG(
+                                JSON_OBJECT('year', report.year, 'guidance', report.guidance)
+                              )
+                              FROM health_reports report
+                              WHERE report.client_id = client.id
+                            )
+                          )
+                        )`,
+        'homonyms',
+      )
+      .groupBy('client.first_name')
+      .addGroupBy('client.last_name')
+      .having('COUNT(*) > 1')
+      .getRawMany();
+
+    return homonymsList.map((elem) => elem.homonyms);
+  }
 
   async getById(
     id: number,
