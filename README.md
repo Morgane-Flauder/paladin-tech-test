@@ -1,99 +1,253 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="120" alt="Nest Logo" /></a>
-</p>
+# Paladin technical test
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+This repo contains the code of Paladin's technical test. The instructions can be found on this
+[Notion page](https://paladin-care.notion.site/Test-Technique-Node-js-Paladin-15a30552924a80ffbf46f45da18faf84).
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://coveralls.io/github/nestjs/nest?branch=master" target="_blank"><img src="https://coveralls.io/repos/github/nestjs/nest/badge.svg?branch=master#9" alt="Coverage" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg" alt="Donate us"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow" alt="Follow us on Twitter"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+1. [Project setup](#project-setup)
+2. [Routes description](#routes)
 
-## Description
+# Project setup
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+## Prerequisites
 
-## Project setup
+You should have:
+- Node.js (version >= 20)
+- Docker
 
+## Installation
+
+Clone the project and go to the project directory:
 ```bash
-$ npm install
+git clone https://github.com/Morgane-Flauder/paladin-tech-test.git
+cd paladin-tech-test
 ```
 
-## Compile and run the project
-
+Copy the environment variables:
 ```bash
-# development
-$ npm run start
-
-# watch mode
-$ npm run start:dev
-
-# production mode
-$ npm run start:prod
+cp .env.example .env
 ```
+
+Run and initialize the local DB with Docker:
+```bash
+docker-compose up -d
+```
+
+Install the project dependencies:
+```bash
+npm install
+```
+
+## Run the project
+
+Run the server:
+```bash
+npm run start:dev
+```
+
+To run the script to find duplicates clients, run:
+```bash
+npm run script src/scripts/find-duplicate-clients.script.ts
+```
+
+The script should display an array of arrays of 2 clientIds or more considered duplicates.
 
 ## Run tests
 
+Unit tests for duplicates functions:
 ```bash
-# unit tests
-$ npm run test
-
-# e2e tests
-$ npm run test:e2e
-
-# test coverage
-$ npm run test:cov
+npm run test
 ```
 
-## Deployment
-
-When you're ready to deploy your NestJS application to production, there are some key steps you can take to ensure it runs as efficiently as possible. Check out the [deployment documentation](https://docs.nestjs.com/deployment) for more information.
-
-If you are looking for a cloud-based platform to deploy your NestJS application, check out [Mau](https://mau.nestjs.com), our official platform for deploying NestJS applications on AWS. Mau makes deployment straightforward and fast, requiring just a few simple steps:
-
+Integration tests of the health reports routes:
 ```bash
-$ npm install -g mau
-$ mau deploy
+npm run test:e2e
 ```
 
-With Mau, you can deploy your application in just a few clicks, allowing you to focus on building features rather than managing infrastructure.
+# Routes
 
-## Resources
+## Clients
 
-Check out a few resources that may come in handy when working with NestJS:
+### GET `/client/{clientId}`
 
-- Visit the [NestJS Documentation](https://docs.nestjs.com) to learn more about the framework.
-- For questions and support, please visit our [Discord channel](https://discord.gg/G7Qnnhy).
-- To dive deeper and get more hands-on experience, check out our official video [courses](https://courses.nestjs.com/).
-- Deploy your application to AWS with the help of [NestJS Mau](https://mau.nestjs.com) in just a few clicks.
-- Visualize your application graph and interact with the NestJS application in real-time using [NestJS Devtools](https://devtools.nestjs.com).
-- Need help with your project (part-time to full-time)? Check out our official [enterprise support](https://enterprise.nestjs.com).
-- To stay in the loop and get updates, follow us on [X](https://x.com/nestframework) and [LinkedIn](https://linkedin.com/company/nestjs).
-- Looking for a job, or have a job to offer? Check out our official [Jobs board](https://jobs.nestjs.com).
+Get a client by its id.
 
-## Support
+Success response:
+```
+{
+    id: <clientId>,
+    firstName: <firstName>,
+    lastName: <lastName>
+}
+```
 
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
+Error responses:
+- 404: clientId not found
 
-## Stay in touch
 
-- Author - [Kamil Myśliwiec](https://twitter.com/kammysliwiec)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
+### GET `/client/{clientId}/health-reports`
 
-## License
+Get all the health reports of a client by its id.
 
-Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).
+Success response:
+```
+[
+    {
+        clientId: <clientId>,
+        year: <year1>,
+        guidance: <guidance>
+    },
+    {
+        clientId: <clientId>,
+        year: <year2>,
+        guidance: <guidance>
+    }
+]
+```
+
+If the client has no reports, the response is an empty list.
+
+Error responses:
+- 404: clientId not found
+
+### POST `/client`
+
+Body:
+```
+{
+    firstName: <firstName>,
+    lastName: <lastName>
+}
+```
+
+Create a new client with given first name and last name. They are both
+mandatory and not empty strings.
+
+Success response:
+```
+{
+    id: <newClientId>,
+    firstName: <firstName>,
+    lastName: <lastName>
+}
+```
+
+Error responses:
+- 400: element(s) missing from body, empty, or not a string
+
+### PUT `/client/{clientId}`
+
+Replace the firstName and lastName of a client.
+
+Body:
+```
+{
+    firstName: <newFirstName>,
+    lastName: <newLastName>
+}
+```
+
+Success response:
+```
+{
+    id: <clientId>,
+    firstName: <newFirstName>,
+    lastName: <newLastName>
+}
+```
+
+Error responses:
+- 404: clientId not found
+
+### PATCH `/client/{clientId}`
+
+Update a client partially with a new first name and/or last name.
+
+Body example:
+```
+{
+    firstName: <newFirstName>
+}
+```
+
+Success response:
+```
+{
+    id: <clientId>,
+    firstName: <newFirstName>,
+    lastName: <lastName>
+}
+```
+
+Error responses:
+- 404: clientId not found
+
+### DELETE `/client/{clientId}`
+
+Delete a client and all their associated health reports.
+
+Error responses:
+- 404: clientId not found
+
+## Health reports
+
+### GET `/health-report/client/{clientId}/year/{year}`
+
+Get a health report by its clientId and year.
+
+Success response:
+```
+{
+    clientId: <clientId>,
+    year: <year>,
+    guidance: <guidance>
+}
+```
+
+Error responses:
+- 404: health report not found for clientId and year
+
+### POST `/health-report/client/{clientId}/year/{year}`
+
+Create new report for clientId and year.
+
+Body:
+```
+{
+    guidance: <guidance>
+}
+```
+
+Success response:
+```
+{
+    clientId: <clientId>,
+    year: <year>,
+    guidance: <guidance>
+}
+```
+
+Error responses:
+- 403: health report already exists for clientId and year
+- 400: guidance is missing, empty, or not "positive" or "negative"
+
+### PUT `/health-report/client/{clientId}/year/{year}`
+
+Update a health report of a clientId and year.
+
+Body:
+```
+{
+    guidance: <guidance>
+}
+```
+
+Error responses:
+- 404: health report not found for clientId and year
+- 400: guidance is missing, empty, or not "positive" or "negative"
+
+### DELETE `/health-report/client/{clientId}/year/{year}`
+
+Delete a health report for a clientId and year.
+
+Error responses:
+- 404: health report not found for clientId and year
