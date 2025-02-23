@@ -2,8 +2,6 @@ import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 
-import { AppController } from './app.controller';
-import { AppService } from './app.service';
 import { ClientsController } from './clients/clients.controller';
 import { ClientsModule } from './clients/clients.module';
 import { ClientsService } from './clients/clients.service';
@@ -28,7 +26,7 @@ import { HealthReportsService } from './health-reports/health-reports.service';
     ClientsModule,
     HealthReportsModule,
   ],
-  controllers: [AppController, ClientsController, HealthReportsController],
-  providers: [AppService, ClientsService, HealthReportsService],
+  controllers: [ClientsController, HealthReportsController],
+  providers: [ClientsService, HealthReportsService],
 })
 export class AppModule {}
