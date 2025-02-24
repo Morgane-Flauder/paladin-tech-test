@@ -5,6 +5,7 @@ This repo contains the code of Paladin's technical test. The instructions can be
 
 1. [Project setup](#project-setup)
 2. [Routes description](#routes)
+3. [Improvements](#improvements)
 
 # Project setup
 
@@ -67,11 +68,11 @@ npm run test:e2e
 
 ## Clients
 
-### GET `/client/{clientId}`
+### GET `/clients/{clientId}`
 
 Get a client by its id.
 
-Success response:
+Success response: 200 OK
 ```
 {
     id: <clientId>,
@@ -81,14 +82,96 @@ Success response:
 ```
 
 Error responses:
-- 404: clientId not found
+- 404 Not Found: clientId not found
 
+### POST `/clients`
 
-### GET `/client/{clientId}/health-reports`
+Create a new client with given first name and last name. They are both
+mandatory and not empty strings.
+
+Body:
+```
+{
+    firstName: <firstName>,
+    lastName: <lastName>
+}
+```
+
+Success response: 201 Created
+```
+{
+    id: <newClientId>,
+    firstName: <firstName>,
+    lastName: <lastName>
+}
+```
+
+Error responses:
+- 400 Bad Request: element(s) missing from body, empty, or not a string
+
+### PUT `/clients/{clientId}`
+
+Replace the firstName and lastName of a client.
+
+Body:
+```
+{
+    firstName: <newFirstName>,
+    lastName: <newLastName>
+}
+```
+
+Success response: 200 OK
+```
+{
+    id: <clientId>,
+    firstName: <newFirstName>,
+    lastName: <newLastName>
+}
+```
+
+Error responses:
+- 404 Not Found: clientId not found
+
+### PATCH `/clients/{clientId}`
+
+Update a client partially with a new first name and/or last name.
+
+Body example:
+```
+{
+    firstName: <newFirstName>
+}
+```
+
+Success response: 200 OK
+```
+{
+    id: <clientId>,
+    firstName: <newFirstName>,
+    lastName: <lastName>
+}
+```
+
+Error responses:
+- 404 Not Found: clientId not found
+
+### DELETE `/clients/{clientId}`
+
+Delete a client and all their associated health reports.
+
+Success response: 204 No Content
+
+Error responses:
+- 404 Not Found: clientId not found
+
+## Health reports
+
+### GET `/clients/{clientId}/health-reports`
 
 Get all the health reports of a client by its id.
 
-Success response:
+Success response: 200 OK
 ```
 [
     {
@@ -107,106 +190,10 @@ Success response:
 If the client has no reports, the response is an empty list.
 
 Error responses:
-- 404: clientId not found
+- 404 Not Found: clientId not found
 
-### POST `/client`
 
-Body:
-```
-{
-    firstName: <firstName>,
-    lastName: <lastName>
-}
-```
-
-Create a new client with given first name and last name. They are both
-mandatory and not empty strings.
-
-Success response:
-```
-{
-    id: <newClientId>,
-    firstName: <firstName>,
-    lastName: <lastName>
-}
-```
-
-Error responses:
-- 400: element(s) missing from body, empty, or not a string
-
-### PUT `/client/{clientId}`
-
-Replace the firstName and lastName of a client.
-
-Body:
-```
-{
-    firstName: <newFirstName>,
-    lastName: <newLastName>
-}
-```
-
-Success response:
-```
-{
-    id: <clientId>,
-    firstName: <newFirstName>,
-    lastName: <newLastName>
-}
-```
-
-Error responses:
-- 404: clientId not found
-
-### PATCH `/client/{clientId}`
-
-Update a client partially with a new first name and/or last name.
-
-Body example:
-```
-{
-    firstName: <newFirstName>
-}
-```
-
-Success response:
-```
-{
-    id: <clientId>,
-    firstName: <newFirstName>,
-    lastName: <lastName>
-}
-```
-
-Error responses:
-- 404: clientId not found
-
-### DELETE `/client/{clientId}`
-
-Delete a client and all their associated health reports.
-
-Error responses:
-- 404: clientId not found
-
-## Health reports
-
-### GET `/health-report/client/{clientId}/year/{year}`
-
-Get a health report by its clientId and year.
-
-Success response:
-```
-{
-    clientId: <clientId>,
-    year: <year>,
-    guidance: <guidance>
-}
-```
-
-Error responses:
-- 404: health report not found for clientId and year
-
-### POST `/health-report/client/{clientId}/year/{year}`
+### POST `/clients/{clientId}/health-reports/{year}`
 
 Create new report for clientId and year.
 
@@ -217,20 +204,25 @@ Body:
 }
 ```
 
-Success response:
+Success response: 201 Created
 ```
 {
-    clientId: <clientId>,
     year: <year>,
     guidance: <guidance>
+    clientId: <clientId>,
+    client: {
+        id: <clientId>,
+        firstName: <firstName>,
+        lastName: <lastName>,
+    },
 }
 ```
 
 Error responses:
-- 403: health report already exists for clientId and year
-- 400: guidance is missing, empty, or not "positive" or "negative"
+- 403 Forbidden: health report already exists for clientId and year
+- 400 Bad Request: guidance is missing, empty, or not "positive" or "negative"
 
-### PUT `/health-report/client/{clientId}/year/{year}`
+### PUT `/clients/{clientId}/health-reports/{year}`
 
 Update a health report of a clientId and year.
 
@@ -241,13 +233,38 @@ Body:
 }
 ```
 
-Error responses:
-- 404: health report not found for clientId and year
-- 400: guidance is missing, empty, or not "positive" or "negative"
+Success responses: 200 OK
+```
+{
+    year: <year>,
+    guidance: <guidance>
+    clientId: <clientId>,
+    client: {
+        id: <clientId>,
+        firstName: <firstName>,
+        lastName: <lastName>,
+    },
+}
+```
 
-### DELETE `/health-report/client/{clientId}/year/{year}`
+Error responses:
+- 404 Not Found: health report not found for clientId and year
+- 400 Bad Request: guidance is missing, empty, or not "positive" or "negative"
+
+### DELETE `/clients/{clientId}/health-reports/{year}`
 
 Delete a health report for a clientId and year.
 
+Success response: 204 No Content
+
 Error responses:
-- 404: health report not found for clientId and year
+- 404 Not Found: health report not found for clientId and year
+
+
+# Improvements
+
+- Refactor to throw HTTP exceptions in controllers only and not services
+- Add a method to delete multiple health reports in HealthReportsService and inject it in ClientsService instead of the health report repository
+- Refactor the script to find duplicates and the associated functions to make them more readable
+- Add integration tests for the clients endpoints
+- Return all the valid duplicates possibilities instead of choosing one by default when different configurations are possible 
