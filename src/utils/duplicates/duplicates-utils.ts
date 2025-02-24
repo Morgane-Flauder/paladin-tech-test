@@ -1,37 +1,37 @@
 import { Guidance } from '../../health-reports/entities/health-report.entity';
 
-export function areHealthReportsCompatible(
-  healthReports1: {
-    year: number;
-    guidance: Guidance;
-  }[],
-  healthReports2: {
-    year: number;
-    guidance: Guidance;
-  }[],
+export type HealthReportInfo = {
+  year: number;
+  guidance: Guidance;
+};
+
+export type Homonyms = {
+  clientId: number;
+  healthReports: HealthReportInfo[];
+}[];
+
+function areHealthReportsCompatible(
+  healthReports1: HealthReportInfo[],
+  healthReports2: HealthReportInfo[],
 ) {
   // Compare 2 arrays of health reports and returns true if there is at least 1
   // report with the same year in both, and all the reports with the same year
   // have the same guidance
-  const healthReportsMap1: { [p: string]: Guidance } = healthReports1.reduce(
-    (obj, healthReport) => ({
-      ...obj,
-      [healthReport.year.toString()]: healthReport.guidance,
-    }),
-    {},
+
+  const healthReportsMap1: Map<string, Guidance> = new Map(
+    healthReports1.map(
+      ({ year, guidance }) => [year.toString(), guidance] as const,
+    ),
   );
-  const healthReportsMap2: { [p: string]: Guidance } = healthReports2.reduce(
-    (obj, healthReport) => ({
-      ...obj,
-      [healthReport.year.toString()]: healthReport.guidance,
-    }),
-    {},
+  const healthReportsMap2: Map<string, Guidance> = new Map(
+    healthReports2.map(
+      ({ year, guidance }) => [year.toString(), guidance] as const,
+    ),
   );
 
   // All the years present in both arrays of reports
-  const commonYears = Object.keys(healthReportsMap1).filter(
-    (year) =>
-      healthReportsMap2 && Object.keys(healthReportsMap2).includes(year),
+  const commonYears = [...healthReportsMap1.keys()].filter((year) =>
+    healthReportsMap2.has(year),
   );
 
   // We can't know if the reports are compatible if they don't have any reports of the same year
@@ -42,20 +42,12 @@ export function areHealthReportsCompatible(
   // The 2 reports array are considered compatibles if there are no reports with same year and different guidance
   // (all reports of the same year have the same guidance)
   return commonYears.every(
-    (year) => healthReportsMap1[year] === healthReportsMap2[year],
+    (year) => healthReportsMap1.get(year) === healthReportsMap2.get(year),
   );
 }
 
-export function getDuplicates(
-  potentialDuplicates: {
-    clientId: number;
-    healthReports: {
-      year: number;
-      guidance: Guidance;
-    }[];
-  }[],
-) {
-  // Compare all the health reports of potential duplicates, and return an array
+export function getDuplicates(homonyms: Homonyms) {
+  // Compare all the health reports of homonyms, and return an array
   // of an array of the clients id considered duplicates.
   // Examples:
   // - [ [1, 2] ] if client 1 and client 2 are duplicates
@@ -63,7 +55,7 @@ export function getDuplicates(
   // - [ [1, 2], [3, 4] ] if client 1 and client 2 are duplicates, and client 3 and 4 are also duplicates
   // - [ ] if no duplicates are found (every clients are considered distinct)
 
-  if (potentialDuplicates.length < 2) {
+  if (homonyms.length < 2) {
     return [];
   }
 
@@ -81,7 +73,7 @@ export function getDuplicates(
   // [ { clientsIds: [1, 3] }, { clientsIds: [2] } ]
   // And client 4 is compatible with clients 1 AND 3:
   // [ { clientsIds: [1, 3, 4] }, { clientsIds: [2] } ]
-  const distinctClients = potentialDuplicates.reduce(
+  const distinctClients = homonyms.reduce(
     (
       duplicates: {
         clientIds: number[];
@@ -90,19 +82,17 @@ export function getDuplicates(
       _,
       currentIndex,
     ) => {
-      if (currentIndex < potentialDuplicates.length - 1) {
+      if (currentIndex < homonyms.length - 1) {
         const foundDuplicate = duplicates.some((duplicate) => {
           if (
             areHealthReportsCompatible(
-              potentialDuplicates[currentIndex + 1].healthReports,
+              homonyms[currentIndex + 1].healthReports,
               duplicate.healthReports,
             )
           ) {
-            duplicate.clientIds.push(
-              potentialDuplicates[currentIndex + 1].clientId,
-            );
+            duplicate.clientIds.push(homonyms[currentIndex + 1].clientId);
             duplicate.healthReports = duplicate.healthReports.concat(
-              potentialDuplicates[currentIndex + 1].healthReports,
+              homonyms[currentIndex + 1].healthReports,
             );
             return true;
           }
@@ -110,8 +100,8 @@ export function getDuplicates(
 
         if (!foundDuplicate) {
           duplicates.push({
-            clientIds: [potentialDuplicates[currentIndex + 1].clientId],
-            healthReports: potentialDuplicates[currentIndex + 1].healthReports,
+            clientIds: [homonyms[currentIndex + 1].clientId],
+            healthReports: homonyms[currentIndex + 1].healthReports,
           });
         }
       }
@@ -119,8 +109,8 @@ export function getDuplicates(
     },
     [
       {
-        clientIds: [potentialDuplicates[0].clientId],
-        healthReports: potentialDuplicates[0].healthReports,
+        clientIds: [homonyms[0].clientId],
+        healthReports: homonyms[0].healthReports,
       },
     ],
   );

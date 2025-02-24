@@ -14,10 +14,10 @@ const main = async () => {
   const app = await NestFactory.create(AppModule);
   const clientsService = app.get(ClientsService);
 
-  const potentialDuplicates = await clientsService.getHomonyms();
+  const homonymsList = await clientsService.getHomonyms();
 
-  const duplicatesClientsIds = potentialDuplicates
-    .map((potentialDuplicate) => getDuplicates(potentialDuplicate))
+  const duplicatesClientsIds = homonymsList
+    .map((homonyms) => getDuplicates(homonyms))
     .filter((duplicates) => duplicates.length > 0)
     .flat();
 

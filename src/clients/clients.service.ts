@@ -2,10 +2,8 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { FindOneOptions, Repository } from 'typeorm';
 
-import {
-  Guidance,
-  HealthReport,
-} from '../health-reports/entities/health-report.entity';
+import { HealthReport } from '../health-reports/entities/health-report.entity';
+import { Homonyms } from '../utils/duplicates/duplicates-utils';
 import { CreateClientDto } from './dto/create-client.dto';
 import { UpdateClientDto } from './dto/update-client.dto';
 import { Client } from './entities/client.entity';
@@ -20,41 +18,25 @@ export class ClientsService {
     private healthReportsRepository: Repository<HealthReport>,
   ) {}
 
-  async getHomonyms(): Promise<
-    {
-      clientId: number;
-      healthReports: {
-        year: number;
-        guidance: Guidance;
-      }[];
-    }[][]
-  > {
+  async getHomonyms(): Promise<Homonyms[]> {
     // Return an array of array of homonyms and their health reports, grouped by full name.
     // Each element is an array of all the clients ids with the same name and their health reports.
 
-    const homonymsList: {
-      homonyms: {
-        clientId: number;
-        healthReports: {
-          year: number;
-          guidance: Guidance;
-        }[];
-      }[];
-    }[] = await this.clientsRepository
+    const homonymsList: { homonyms: Homonyms }[] = await this.clientsRepository
       .createQueryBuilder('client')
       .select(
         `JSON_ARRAYAGG(
-                          JSON_OBJECT(
-                            'clientId',client.id,
-                            'healthReports', (
-                              SELECT JSON_ARRAYAGG(
-                                JSON_OBJECT('year', report.year, 'guidance', report.guidance)
-                              )
-                              FROM health_reports report
-                              WHERE report.client_id = client.id
-                            )
-                          )
-                        )`,
+            JSON_OBJECT(
+              'clientId',client.id,
+              'healthReports', (
+                SELECT JSON_ARRAYAGG(
+                  JSON_OBJECT('year', report.year, 'guidance', report.guidance)
+                )
+                FROM health_reports report
+                WHERE report.client_id = client.id
+              )
+            )
+        )`,
         'homonyms',
       )
       .groupBy('client.first_name')
