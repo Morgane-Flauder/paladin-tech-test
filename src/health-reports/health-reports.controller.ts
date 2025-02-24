@@ -2,6 +2,7 @@ import {
   Body,
   Controller,
   Delete,
+  HttpCode,
   Param,
   ParseIntPipe,
   Post,
@@ -43,6 +44,7 @@ export class HealthReportsController {
   }
 
   @Delete('/client/:clientId/year/:year')
+  @HttpCode(204)
   delete(
     @Param('clientId', ParseIntPipe) clientId: number,
     @Param('year', ParseIntPipe) year: number,
