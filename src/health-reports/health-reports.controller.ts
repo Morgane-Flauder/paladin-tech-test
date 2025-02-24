@@ -2,6 +2,7 @@ import {
   Body,
   Controller,
   Delete,
+  Get,
   HttpCode,
   Param,
   ParseIntPipe,
@@ -13,11 +14,18 @@ import { CreateHealthReportDto } from './dto/create-health-report.dto';
 import { HealthReport } from './entities/health-report.entity';
 import { HealthReportsService } from './health-reports.service';
 
-@Controller('health-report')
+@Controller('/clients/:clientId/health-reports')
 export class HealthReportsController {
   constructor(private healthReportsService: HealthReportsService) {}
 
-  @Post('/client/:clientId/year/:year')
+  @Get()
+  async getHealthReportsByClientId(
+    @Param('clientId', ParseIntPipe) id: number,
+  ): Promise<HealthReport[]> {
+    return this.healthReportsService.getHealthReportsByClientId(id);
+  }
+
+  @Post(':year')
   create(
     @Param('clientId', ParseIntPipe) clientId: number,
     @Param('year', ParseIntPipe) year: number,
@@ -30,7 +38,7 @@ export class HealthReportsController {
     });
   }
 
-  @Put('/client/:clientId/year/:year')
+  @Put(':year')
   replace(
     @Param('clientId', ParseIntPipe) clientId: number,
     @Param('year', ParseIntPipe) year: number,
@@ -43,7 +51,7 @@ export class HealthReportsController {
     });
   }
 
-  @Delete('/client/:clientId/year/:year')
+  @Delete(':year')
   @HttpCode(204)
   delete(
     @Param('clientId', ParseIntPipe) clientId: number,

@@ -18,6 +18,18 @@ export class HealthReportsService {
     private clientsService: ClientsService,
   ) {}
 
+  async getHealthReportsByClientId(clientId: number): Promise<HealthReport[]> {
+    const client = await this.clientsService.getById(clientId, {
+      relations: { healthReports: true },
+    });
+
+    if (!client) {
+      throw new ClientNotFoundException(clientId);
+    }
+
+    return client.healthReports;
+  }
+
   async getByClientIdAndYear(
     clientId: number,
     year: number,

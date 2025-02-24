@@ -5,6 +5,8 @@ import { ClientsService } from '../clients/clients.service';
 import { Client } from '../clients/entities/client.entity';
 import ClientNotFoundException from '../clients/exceptions/client-not-found.exception';
 import { HealthReport } from './entities/health-report.entity';
+import { HealthReportsController } from './health-reports.controller';
+import { HealthReportsService } from './health-reports.service';
 
 @Module({
   imports: [
@@ -12,6 +14,7 @@ import { HealthReport } from './entities/health-report.entity';
     ClientNotFoundException,
   ],
   exports: [TypeOrmModule],
-  providers: [ClientsService],
+  providers: [ClientsService, HealthReportsService],
+  controllers: [HealthReportsController],
 })
 export class HealthReportsModule {}

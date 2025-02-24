@@ -60,18 +60,6 @@ export class ClientsService {
     });
   }
 
-  async getHealthReportByClientId(id: number): Promise<HealthReport[]> {
-    const client = await this.getById(id, {
-      relations: { healthReports: true },
-    });
-
-    if (!client) {
-      throw new ClientNotFoundException(id);
-    }
-
-    return client.healthReports;
-  }
-
   create(createClientDto: CreateClientDto): Promise<Client> {
     const client = new Client();
     client.firstName = createClientDto.firstName;

@@ -11,14 +11,13 @@ import {
   Put,
 } from '@nestjs/common';
 
-import { HealthReport } from '../health-reports/entities/health-report.entity';
 import { ClientsService } from './clients.service';
 import { CreateClientDto } from './dto/create-client.dto';
 import { UpdateClientDto } from './dto/update-client.dto';
 import { Client } from './entities/client.entity';
 import ClientNotFoundException from './exceptions/client-not-found.exception';
 
-@Controller('client')
+@Controller('clients')
 export class ClientsController {
   constructor(private clientsService: ClientsService) {}
 
@@ -31,13 +30,6 @@ export class ClientsController {
     }
 
     return client;
-  }
-
-  @Get(':id/health-reports')
-  async getHealthReportsById(
-    @Param('id', ParseIntPipe) id: number,
-  ): Promise<HealthReport[]> {
-    return this.clientsService.getHealthReportByClientId(id);
   }
 
   @Post()
